@@ -116,51 +116,7 @@ SQLite 表包括 `Devices`、`Alarms`、`WorkOrders`、`TelemetryRecords`、`Use
 
 UI Virtualization 只减少已加载集合的控件实例和绘制成本；Data Virtualization / 服务端分页减少真正加载到内存和通过 IO 传输的数据量。两者解决不同层次的问题，本项目在 DataGrid 和历史/报警查询中分别使用。
 
-## Interview Notes
 
-### MVVM 的作用是什么？
-
-View 只描述布局和绑定；ViewModel 暴露状态与命令；Model/Service 承担业务。它降低 UI 与业务耦合，使流程可以在不启动 Window 的情况下测试，也让相同服务可被其他客户端复用。
-
-### Binding 如何更新 UI？
-
-普通属性变化依赖 `INotifyPropertyChanged`，集合增删依赖 `INotifyCollectionChanged`。Toolkit 的 `ObservableProperty` 生成通知代码。`ObservableCollection` 只通知集合结构变化，其中对象的字段变化仍要求对象自身实现 `INotifyPropertyChanged`。
-
-### ObservableCollection 和 List 有何区别？
-
-`List<T>` 不发出集合变更通知；`ObservableCollection<T>` 在增删、移动、重置时通知绑定引擎，但不会自动知道子对象属性变了。
-
-### DependencyProperty 与 INotifyPropertyChanged 有何区别？
-
-DependencyProperty 属于 WPF 属性系统，支持样式、动画、继承、默认值与绑定优先级，适合 Control/UserControl 的可配置属性。`INotifyPropertyChanged` 是普通 CLR 对象的变更协议，适合 ViewModel。`DeviceStatusCard` 使用前者，页面 ViewModel 使用后者。
-
-### async/await 是否一定创建线程？Task.Run 何时使用？
-
-不会。异步 IO 通常在等待期间不占线程，完成后通过上下文继续。`Task.Run` 适合把确实耗 CPU 的工作移出 UI 线程，不应包裹 HttpClient 或 EF Core 异步 IO。
-
-### 为什么后台线程不能直接修改 UI？Dispatcher 是什么？
-
-WPF 对象具有线程亲和性，只能由创建它的 Dispatcher 线程访问。Dispatcher 是 UI 线程的工作队列。`Invoke` 同步阻塞调用方；`InvokeAsync` 排队并返回可等待操作，更适合异步链路且降低死锁风险。
-
-### 为什么高频数据不能逐条 Dispatcher？如何优化？
-
-逐条调度会让队列增长、布局和绑定通知过密，造成输入卡顿。应在后台 Buffer，按设备聚合最新值，Throttle 到 100–300ms，以 Batch 更新 UI，再配合虚拟化和分页。本项目的 `TelemetryAggregator + PeriodicTimer` 展示了该策略。
-
-### Singleton / Transient 如何选择？
-
-当前用户、导航、实时源、Dispatcher 与聚合器需要共享状态，注册为 Singleton。页面 ViewModel、窗口、Repository 和业务 Service 使用 Transient，避免无意共享可变页面状态和 DbContext。
-
-### 为什么桌面应用适合 IDbContextFactory？
-
-桌面应用生命周期长且没有天然 HTTP Scope。共享一个 DbContext 会积累 ChangeTracker、出现跨线程访问和陈旧实体。Factory 让每次 Repository 操作获得短生命周期上下文，边界清晰、并发安全性更容易控制。
-
-### WPF 常见内存泄漏来源？
-
-长生命周期对象订阅短生命周期对象事件、未停止 Timer、未取消后台任务、Messenger 强引用、缓存 ViewModel、静态事件以及未释放资源。应明确拥有者，在离开页面/关闭窗口时退订、取消并 Dispose；必要时使用弱事件。
-
-### 为什么客户端 RBAC 不能作为安全边界？
-
-客户端可被篡改、请求可被重放，隐藏控件不等于阻止 API 调用。授权必须在可信服务端和数据边界执行。
 
 ## 测试
 
