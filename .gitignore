@@ -1,0 +1,8 @@
+# 构建产物、IDE 临时文件、本地数据库和测试输出不纳入版本控制。
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.db
+TestResults/

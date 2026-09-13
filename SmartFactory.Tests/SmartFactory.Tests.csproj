@@ -1,0 +1,31 @@
+<!-- 测试项目：使用 xUnit 和 Fake 服务测试业务与 ViewModel，不启动完整窗口。 -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartFactory.Application\SmartFactory.Application.csproj" />
+    <ProjectReference Include="..\SmartFactory.Domain\SmartFactory.Domain.csproj" />
+    <ProjectReference Include="..\SmartFactory.Infrastructure\SmartFactory.Infrastructure.csproj" />
+    <ProjectReference Include="..\SmartFactory.Wpf\SmartFactory.Wpf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
